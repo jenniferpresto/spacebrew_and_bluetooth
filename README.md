@@ -15,3 +15,5 @@ ws node module available on Github [here](https://github.com/einaros/ws) and on 
 
 ####Basic setup
 server.js runs the node server. In the command line, start the server by navigating to that folder and typing "node server.js". Then open public/index.html, and it should then connect to the local server and should send a message to the terminal console.
+
+Note that the node module socket.io is included in the node_modules folder; however, no file is currently accessing it.
