@@ -1,19 +1,48 @@
-// var noble = require('../index');
+/*****************************
+
+The following code is adapted from the advertisement-discovery.js example
+from the noble library, available here:
+https://github.com/sandeepmistry/noble
+
+*****************************/
+
+// creating socket.io connection
+var util = require('util');
+var connect = require('connect');
+var port = process.env.PORT || 5000;
+
+var app = connect.createServer(
+connect.static(__dirname + '/public')
+).listen(port);
+
+util.log('server running at port: ' + port);
+
+var io = require('socket.io').listen(app);
+
+io.set('log level', 2);
+
+var connectedSocket;
+io.sockets.on('connection', function(socket) {
+  connectedSocket = socket;
+})
+
+// bluetooth connection
 var noble = require('noble');
 
-var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer({port:5000});
+// ws websocket stuff
+// var WebSocketServer = require('ws').Server;
+// var wss = new WebSocketServer({port:5000});
 
-var ws; // connection back to client
+// var ws; // connection back to client
 
-wss.on('connection', function(socket) {
-    console.log("WebSocket client connected", socket);
-    ws = socket;
-});
+// wss.on('connection', function(socket) {
+//     console.log("WebSocket client connected");
+//     ws = socket;
+// });
 
 
 noble.on('stateChange', function(state) {
-  console.log('noble.on function called');
+  console.log('stateChange function called');
   if (state === 'poweredOn') {
     console.log('state is powered on');
     noble.startScanning();
@@ -59,14 +88,25 @@ noble.on('discover', function(peripheral) {
     console.log('\t\t' + peripheral.advertisement.txPowerLevel);
   }
 
+
+  // automatically connect to a peripheral that is discovered
+
   peripheral.connect(function(stuff) {
     console.log('peripheral connected: ' + peripheral.advertisement.localName);
-    ws.send(stuff);
+    console.log('full information', peripheral.advertisement);
+    // if we have a connection, send to the ws client
+    // if (ws) {
+    //   ws.send('name', peripheral.advertisement.localName);
+    //   ws.send('uuid', peripheral.uuid);
+    // }
+
+    connectedSocket.emit('peripheral_info', peripheral.advertisement);
+    util.log('sending info');
   })
 
-  console.log();
+
 });
 
 noble.on('connect', function(peripheral) {
-  console.log('peripheral connected');
+  console.log('peripheral connected; separate function');
 });
