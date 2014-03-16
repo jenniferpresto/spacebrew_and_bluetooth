@@ -4,15 +4,6 @@ Server to run bluetooth module.
 
 **************************** */
 
-// ---------------------------------
-// websocket stuff
-
-// var WebSocketServer = require('ws').Server;
-// var wss = new WebSocketServer({port:5000});
-
-// wss.on('connection', function(event) {
-//     console.log("WebSocket client connected", event);
-// });
 
 
 
@@ -29,6 +20,17 @@ btSerial.on('found', function(address, name) {
     btSerial.findSerialPortChannel(address, function(channel) {
         btSerial.connect(address, channel, function() {
             console.log('connected');
+
+                        
+            // ---------------------------------
+            // websocket stuff
+
+            var WebSocketServer = require('ws').Server;
+            var wss = new WebSocketServer({port:5000});
+
+            wss.on('connection', function(event) {
+                console.log("WebSocket client connected", event);
+            });
 
             btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
                 if (err) console.log(err);
