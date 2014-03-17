@@ -11,6 +11,7 @@ var util = require('util');
 var connect = require('connect');
 var port = process.env.PORT || 5000;
 
+// create web server
 var app = connect.createServer(
 connect.static(__dirname + '/public')
 ).listen(port);
@@ -100,10 +101,11 @@ noble.on('discover', function(peripheral) {
     //   ws.send('uuid', peripheral.uuid);
     // }
 
-    connectedSocket.emit('peripheral_info', peripheral.advertisement);
-    util.log('sending info');
+    if (connectedSocket !== undefined) {
+      connectedSocket.emit('peripheral_info', peripheral.advertisement);
+      util.log('sending info');
+    }
   })
-
 
 });
 
