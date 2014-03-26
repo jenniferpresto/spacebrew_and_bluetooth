@@ -71,6 +71,7 @@ noble.on('stateChange', function(state) {
 
 
 noble.on('discover', function(peripheral) {
+  console.log('here!');
   console.log('peripheral discovered (' + peripheral.uuid+ '):');
   console.log('\thello my local name is:');
   console.log('\t\t' + peripheral.advertisement.localName);

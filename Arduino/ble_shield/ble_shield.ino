@@ -4,7 +4,7 @@
 #include <services.h>
 
 void setup(){
-  ble_set_name("BLE_NAME");
+  ble_set_name("BLE_GUS");
 
   //starts the BLE LIBRARY
   ble_begin(); 
