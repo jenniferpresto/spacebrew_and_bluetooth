@@ -4,6 +4,9 @@ The following code is adapted from the advertisement-discovery.js example
 from the noble library, available here:
 https://github.com/sandeepmistry/noble
 
+Helpful examples on wiki here:
+https://github.com/sandeepmistry/noble/wiki/Getting-started
+
 *****************************/
 
 // creating socket.io connection
@@ -116,11 +119,10 @@ noble.on('discover', function(peripheral) {
     console.log('\t\t' + peripheral.advertisement.txPowerLevel);
   }
 
-
   // automatically connect to a peripheral that is discovered
 
   peripheral.connect(function(stuff) {
-    console.log('peripheral connected: ' + peripheral.advertisement.localName);
+    console.log('peripheral connected:', peripheral.advertisement.localName);
     console.log('full information', peripheral.advertisement);
     // if we have a connection, send to the ws client
     // if (ws) {
@@ -132,11 +134,18 @@ noble.on('discover', function(peripheral) {
       connectedSocket.emit('peripheral_info', peripheral.advertisement);
       util.log('sending info');
     }
-  })
 
-});
+    peripheral.discoverServices(['180a'], function(error, services) {
+      var deviceInformationService = services[0];
+      console.log('discovered device information service');
 
-noble.on('connect', function(peripheral) {
-  console.log('peripheral connected; separate function');
+      deviceInformationService.discoverCharacteristics(null, function(error, characteristics) {
+        console.log('discover the following characteristics: ');
+        for (var i in characteristics) {
+          console.log('  ' + i + 'uuid: ' + characteristics[i].uuid);
+        }
+      });
+    });
+  });
 
 });
