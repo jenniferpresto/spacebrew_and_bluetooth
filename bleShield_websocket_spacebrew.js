@@ -147,7 +147,8 @@ function InitializeBluetooth() {
         peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
           console.log('discovered service from RedBear BLE shield.');
           console.log('its size is: ' + services.size);
-          var characteristics = services[0].discoverCharacteristics(null, function(error, characteristics) {
+          console.log('its rssi is: ', services[0].rssi);
+          var characteristics = services[0].discoverCharacteristics(null, function(error, allCharacteristics) {
             console.log('discovered the following characteristics');
             if (connectedSocket !== undefined) {
               // var stringifiedCharacteristics = characteristics.stringify();
@@ -156,32 +157,38 @@ function InitializeBluetooth() {
             }
 
             // print uuid for both characteristics in the service
-            for (var i in characteristics) {
+            for (var i in allCharacteristics) {
 
-              console.log( ' ' + i + ' uuid: ' + characteristics[i].uuid);
-              console.log(' ' + i + ' name: ' + characteristics[i].name);
+              console.log( ' ' + i + ' uuid: ' + allCharacteristics[i].uuid);
+              console.log(' ' + i + ' name: ' + allCharacteristics[i].name);
 
               // if (connectedSocket !== undefined) {
               //   connectedSocket.emit('characteristic', characteristics[i]);
               //   util.log('sending info');
               // }
 
-              characteristics[i].read(function(error, data) {
+              // note: this is called twice for i=1, never for i=0
+              allCharacteristics[i].read(function(error, data) {
                 console.log('reading data for characteristic ' + i + ': ', data);
               })
+
             }
 
             // one characteristic is for reading data from BLE shield
-            services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristic) {
+            services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, specificCharacteristic) {
               console.log('specific characteristic');
-              console.log(characteristic);
+              console.log(specificCharacteristic);
               console.log('\n');
-              console.log('characteristic _noble');
-              console.log('_noble: ', characteristic[0]._noble);
+              console.log('specificCharacteristic _noble');
+              console.log('_noble: ', specificCharacteristic[0]._noble);
               // connectedSocket.emit('characteristic', characteristic[0]._noble);
               console.log('\n');
-              console.log('_peripherals: ', characteristic[0]._noble._peripherals);
-              console.log('_properties: ', characteristic[0]._noble._properties);
+              console.log('_peripherals: ', specificCharacteristic[0]._noble._peripherals);
+              console.log('_peripherals specific ID: ', specificCharacteristic[0]._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91);
+              console.log('_peripherals specific ID rssi: ', specificCharacteristic[0]._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91.rssi);
+              console.log('_properties: ', specificCharacteristic[0]._noble._properties);
+              console.log('properties: ', specificCharacteristic[0].properties);
+              console.log('rssi: ', specificCharacteristic[0].rssi);
             })
           })
         })
