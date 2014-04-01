@@ -39,6 +39,9 @@ window.onload = function () {
 		console.log(data);
 	});
 
+	socket.on('from spacebrew with love', function(data) {
+		console.log('got spacebrew message: ', data);
+	});
 
 	// function setup() {
 

@@ -19,6 +19,7 @@ var noble = require('noble');
 
 var port = process.env.PORT || 5000;
 
+var sb = new Spacebrew.Client();
 
 // create web server
 var app = connect.createServer(
@@ -48,7 +49,7 @@ function ConnectSpacebrew() {
 
     if (not_init) {
       // setup spacebrew
-      var sb = new Spacebrew.Client();  // create spacebrew client object
+      // var sb = new Spacebrew.Client();  // create spacebrew client object
 
       sb.name("BLUETOOTH");
       sb.description("This app sends text from an HTML form."); // set the app description
@@ -57,9 +58,12 @@ function ConnectSpacebrew() {
       sb.addPublish("text", "string", "");  // create the publication feed
       sb.addSubscribe("text", "string");    // create the subscription feed
 
+
       // configure the publication and subscription feeds
-      sb.onStringMessage = function () { console.log("onStringMessage") };   
-      sb.onOpen = function () { console.log("onOpen") };
+      // sb.onStringMessage = function () { console.log("onStringMessage") };
+
+      sb.onStringMessage = onStringMessage;
+      sb.onOpen = function () { console.log("Spacebrew is open") };
 
       // connect to spacbrew
       sb.connect();  
@@ -68,6 +72,12 @@ function ConnectSpacebrew() {
     }
 } // end of ConnectSpacebrew() function
 
+function onStringMessage(name, value) {
+  console.log("Receiving Spacebrew string message");
+  console.log("Value is ", value);
+  connectedSocket.emit('from spacebrew with love', value);
+  console.log('sent value via websockets to browser');
+}
 
 // bluetooth
 function InitializeBluetooth() {
@@ -171,26 +181,52 @@ function InitializeBluetooth() {
               allCharacteristics[i].read(function(error, data) {
                 console.log('reading data for characteristic ' + i + ': ', data);
               })
+            } // end of for loop
 
-            }
 
-            // one characteristic is for reading data from BLE shield
-            services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, specificCharacteristic) {
-              console.log('specific characteristic');
-              console.log(specificCharacteristic);
-              console.log('\n');
-              console.log('specificCharacteristic _noble');
-              console.log('_noble: ', specificCharacteristic[0]._noble);
-              // connectedSocket.emit('characteristic', characteristic[0]._noble);
-              console.log('\n');
-              console.log('_peripherals: ', specificCharacteristic[0]._noble._peripherals);
-              console.log('_peripherals specific ID: ', specificCharacteristic[0]._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91);
-              console.log('_peripherals specific ID rssi: ', specificCharacteristic[0]._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91.rssi);
-              console.log('_properties: ', specificCharacteristic[0]._noble._properties);
-              console.log('properties: ', specificCharacteristic[0].properties);
-              console.log('rssi: ', specificCharacteristic[0].rssi);
+            // NOTE: IF SET INTERVAL IS SET TO ON, SPITS OUT DATA TO CONSOLE LIKE CRAZY AND
+            // EVENTUALLY ABORTS
+            // setInterval(function() {
+
+
+              // one characteristic is for reading data from BLE shield
+              services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, specificCharacteristic) {
+                console.log('specific characteristic');
+                console.log(specificCharacteristic);
+                console.log('\n');
+                console.log('specificCharacteristic _noble');
+                console.log('_noble: ', specificCharacteristic[0]._noble);
+                // connectedSocket.emit('characteristic', characteristic[0]._noble);
+                console.log('\n');
+                console.log('_peripherals: ', specificCharacteristic[0]._noble._peripherals);
+                console.log('_peripherals specific ID: ', specificCharacteristic[0]._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91);
+                console.log('_peripherals specific ID rssi: ', specificCharacteristic[0]._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91.rssi);
+                console.log('_properties: ', specificCharacteristic[0]._noble._properties);
+                console.log('properties: ', specificCharacteristic[0].properties);
+                console.log('rssi: ', specificCharacteristic[0].rssi);
+
+
+                // try to determine every time this changes ('read' does not work or, at top level, just undefined)
+                console.log('\n\ntrying to read rssi as data');
+                var mostBasic = specificCharacteristic[0];
+                // this winds up as undefined
+                mostBasic.read(function(error, data) {
+                  console.log(data);
+                })
+
+                mostBasic.on('read', function(data, isNotification) {
+                  console.log('calling read function');
+                  console.log(mostBasic._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91.rssi);
+                  console.log(data);
+                  var rssiNum = mostBasic._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91.rssi;
+
+                  sb.send("text", "string", rssiNum.toString());
+                })
+
+                // console.log(mostBasic._noble._peripherals.d49abe6bfb9b4bc8847238f760413d91.rssi);
+              // }, 30000); // end of setInterval()
             })
-          })
+          }) // end of var characteristics
         })
       });
     } // end of if-statement to make sure connecting only to BLE-SHIELD
