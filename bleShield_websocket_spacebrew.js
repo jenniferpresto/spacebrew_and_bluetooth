@@ -12,7 +12,11 @@ https://github.com/sandeepmistry/noble/wiki/Getting-started
 // creating socket.io connection
 var util = require('util');
 var connect = require('connect');
+// Spacebrew connection
 var Spacebrew = require('./spacebrew.js').Spacebrew;
+// bluetooth connection
+var noble = require('noble');
+
 var port = process.env.PORT || 5000;
 
 
@@ -30,122 +34,186 @@ io.set('log level', 2);
 var connectedSocket;
 io.sockets.on('connection', function(socket) {
   connectedSocket = socket;
+
+  // connect Spacebrew only after socket connected
+  ConnectSpacebrew();
+  // discover bluetooth devices only after socket connected (consider making callback from Spacebrew connection)
+  BlueToothDiscover();
+
 })
 
-// bluetooth connection
-var noble = require('noble');
 
-// ws websocket stuff
-// var WebSocketServer = require('ws').Server;
-// var wss = new WebSocketServer({port:5000});
+// Spacebrew
+function ConnectSpacebrew() {
+  var not_init = true;
 
-// var ws; // connection back to client
+  // noble.on('stateChange', function(state) {
 
-// wss.on('connection', function(socket) {
-//     console.log("WebSocket client connected");
-//     ws = socket;
-// });
+    if (not_init) {
+      // setup spacebrew
+      var sb = new Spacebrew.Client();  // create spacebrew client object
 
-var not_init = true;
+      sb.name("BLUETOOTH");
+      sb.description("This app sends text from an HTML form."); // set the app description
 
-noble.on('stateChange', function(state) {
+      // create the spacebrew subscription channels
+      sb.addPublish("text", "string", "");  // create the publication feed
+      sb.addSubscribe("text", "string");    // create the subscription feed
 
-  if (not_init) {
-    // setup spacebrew
-    var sb = new Spacebrew.Client();  // create spacebrew client object
+      // configure the publication and subscription feeds
+      sb.onStringMessage = function () { console.log("onStringMessage") };   
+      sb.onOpen = function () { console.log("onOpen") };
 
-    sb.name("BLUETOOTH");
-    sb.description("This app sends text from an HTML form."); // set the app description
+      // connect to spacbrew
+      sb.connect();  
 
-    // create the spacebrew subscription channels
-    sb.addPublish("text", "string", "");  // create the publication feed
-    sb.addSubscribe("text", "string");    // create the subscription feed
-
-    // configure the publication and subscription feeds
-    sb.onStringMessage = function () { console.log("onStringMessage") };   
-    sb.onOpen = function () { console.log("onOpen") };
-
-    // connect to spacbrew
-    sb.connect();  
-
-    not_init = false;
-
-  }
-
-  console.log('stateChange function called');
-  if (state === 'poweredOn') {
-    console.log('state is powered on');
-    noble.startScanning();
-  } else {
-    noble.stopScanning();
-    console.log("scanning stopped");
-  }
-
-  if (state === 'unknown') {
-    console.log('state is unknown');
-  }
-
-  if (state === 'resetting') {
-    console.log('state is resetting');
-  }
-
-  if (state==='unsupported') {
-    console.log('state is unsupported');
-  }
-
-  if (state==='unauthorized') {
-    console.log('state is unauthorized');
-  }
-
-});
-
-
-noble.on('discover', function(peripheral) {
-  console.log('peripheral discovered (' + peripheral.uuid+ '):');
-  console.log('\thello my local name is:');
-  console.log('\t\t' + peripheral.advertisement.localName);
-  console.log('\tcan I interest you in any of the following advertised services:');
-  console.log('\t\t' + JSON.stringify(peripheral.advertisement.serviceUuids));
-  if (peripheral.advertisement.serviceData) {
-    console.log('\there is my service data:');
-    console.log('\t\t' + JSON.stringify(peripheral.advertisement.serviceData.toString('hex')));
-  }
-  if (peripheral.advertisement.manufacturerData) {
-    console.log('\there is my manufacturer data:');
-    console.log('\t\t' + JSON.stringify(peripheral.advertisement.manufacturerData.toString('hex')));
-  }
-  if (peripheral.advertisement.txPowerLevel !== undefined) {
-    console.log('\tmy TX power level is:');
-    console.log('\t\t' + peripheral.advertisement.txPowerLevel);
-  }
-
-  // automatically connect to a peripheral that is discovered
-
-  peripheral.connect(function(stuff) {
-    console.log('peripheral connected:', peripheral.advertisement.localName);
-    console.log('full information', peripheral.advertisement);
-    // if we have a connection, send to the ws client
-    // if (ws) {
-    //   ws.send('name', peripheral.advertisement.localName);
-    //   ws.send('uuid', peripheral.uuid);
-    // }
-
-    if (connectedSocket !== undefined) {
-      connectedSocket.emit('peripheral_info', peripheral.advertisement);
-      util.log('sending info');
+      not_init = false;
     }
 
-    peripheral.discoverServices(['180a'], function(error, services) {
-      var deviceInformationService = services[0];
-      console.log('discovered device information service');
+    // console.log('stateChange function called');
+    // if (state === 'poweredOn') {
+    //   console.log('state is powered on');
+    //   noble.startScanning();
+    // } else {
+    //   noble.stopScanning();
+    //   console.log("scanning stopped");
+    // }
 
-      deviceInformationService.discoverCharacteristics(null, function(error, characteristics) {
-        console.log('discover the following characteristics: ');
-        for (var i in characteristics) {
-          console.log('  ' + i + 'uuid: ' + characteristics[i].uuid);
+    // if (state === 'unknown') {
+    //   console.log('state is unknown');
+    // }
+
+    // if (state === 'resetting') {
+    //   console.log('state is resetting');
+    // }
+
+    // if (state==='unsupported') {
+    //   console.log('state is unsupported');
+    // }
+
+    // if (state==='unauthorized') {
+    //   console.log('state is unauthorized');
+    // }
+
+  // }); // end of noble statechange function
+} // end of ConnectSpacebrew() function
+
+function BlueToothDiscover() {
+  console.log('starting bluetooth discover function');
+  noble.on('discover', function(peripheral) {
+    console.log('peripheral discovered (' + peripheral.uuid+ '):');
+    console.log('\thello my local name is:');
+    console.log('\t\t' + peripheral.advertisement.localName);
+    console.log('\tcan I interest you in any of the following advertised services:');
+    console.log('\t\t' + JSON.stringify(peripheral.advertisement.serviceUuids));
+    if (peripheral.advertisement.serviceData) {
+      console.log('\there is my service data:');
+      console.log('\t\t' + JSON.stringify(peripheral.advertisement.serviceData.toString('hex')));
+    }
+    if (peripheral.advertisement.manufacturerData) {
+      console.log('\there is my manufacturer data:');
+      console.log('\t\t' + JSON.stringify(peripheral.advertisement.manufacturerData.toString('hex')));
+    }
+    if (peripheral.advertisement.txPowerLevel !== undefined) {
+      console.log('\tmy TX power level is:');
+      console.log('\t\t' + peripheral.advertisement.txPowerLevel);
+    }
+
+    // connect to a peripheral if it is the RedBear BLE shield
+    if (peripheral.uuid === 'd49abe6bfb9b4bc8847238f760413d91') {
+
+      peripheral.connect(function(stuff) {
+        console.log('peripheral connected:', peripheral.advertisement.localName);
+        console.log('full information', peripheral.advertisement);
+        console.log('peripheral uuid:', peripheral.uuid);
+
+        if (connectedSocket !== undefined) {
+          connectedSocket.emit('peripheral_info', peripheral.advertisement);
+          util.log('sending info');
         }
-      });
-    });
-  });
 
-});
+        // discover services
+        // there are four discoverable services; the one below is always the third one
+        peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
+          console.log('discovered service from RedBear BLE shield.');
+          console.log('its size is: ' + services.size);
+          var characteristics = services[0].discoverCharacteristics(null, function(error, characteristics) {
+            console.log('discovered the following characteristics');
+            if (connectedSocket !== undefined) {
+              var stringifiedCharacteristics = characteristics.stringify();
+              connectedSocket.emit('characteristic', characteristics);
+              util.log('sending info');
+            }
+            for (var i in characteristics) {
+
+              console.log( ' ' + i + ' uuid: ' + characteristics[i].uuid);
+              console.log(' ' + i + ' name: ' + characteristics[i].name);
+              var currentCharacteristic = characteristics[i];
+
+              // if (connectedSocket !== undefined) {
+              //   connectedSocket.emit('characteristic', characteristics[i]);
+              //   util.log('sending info');
+              // }
+
+              currentCharacteristic.read(function(error, data) {
+                console.log('reading data: ', data);
+              })
+            }
+          })
+        })
+        // peripheral.discoverServices(null, function(error, services) {
+        //   console.log('discovered the following services: ');
+        //   for (var j in services) {
+        //     console.log(' ' + j + '\tservices uuid: ' + services[j].uuid);   
+
+        //     var serviceCharacteristics = services[j].discoverCharacteristics(null, function(error, characteristics) {
+        //       console.log('looking for characteristics');
+        //       for (var k in serviceCharacteristics) {
+        //         console.log(' ' + k + '\tcharacteristics uuid: ' + serviceCharacteristics[k]);
+        //         var currentCharacteristic = serviceCharacteristics[k];
+        //         currentCharacteristic.read(function(error, data) {
+        //           console.log('reading the data: ', data.toString('utf8'));
+        //         })
+        //       }
+        //     })
+
+        //     var specificService = services[2].discoverCharacteristics(null, function(error, characteristics) {
+        //       console.log('looking for characteristics');
+        //       console.log('number of characteristics: ' + specificService.length);
+        //       for (var k in serviceCharacteristics) {
+        //         console.log(' ' + k + '\tcharacteristics uuid: ' + serviceCharacteristics[k]);
+        //         var currentCharacteristic = serviceCharacteristics[k];
+        //         currentCharacteristic.read(function(error, data) {
+        //           console.log('reading the data: ', data.toString('utf8'));
+        //         })
+        //       }
+        //     })
+        //   }
+        //   var deviceInformationService = services[0];
+        //   console.log('discovered device information service');
+
+        //   deviceInformationService.discoverCharacteristics(null, function(error, characteristics) {
+        //     console.log('discover the following characteristics: ');
+        //     for (var i in characteristics) {
+        //       console.log('  ' + i + 'characteristics uuid: ' + characteristics[i].uuid);
+        //       var currentCharacteristic = characteristics[i];
+        //       currentCharacteristic.read(function(error, data) {
+        //         console.log('reading the data:', data.toString('utf8'));  
+        //       })
+        //     }
+        //   });
+        // });
+
+        // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
+        //   console.log('discovered specific service');
+        //   services.discoverCharacteristics(null, function(error, characteristics) {
+        //     for (var m in characteristics) {
+        //       console.log('characteristic ' + m + ': ' + characteristics[m].uuid);
+        //     }
+        //   });
+        // });
+
+      });
+    } // end of if-statement to make sure connecting only to BLE-SHIELD
+  });
+} // end of BlueToothDiscover() function

@@ -7,8 +7,8 @@ This file deals only with Spacebrew so far.
 
 window.onload = function () {
 
-	var sb;
-	var app_name = "Test App";
+	// var sb;
+	// var app_name = "Test App";
 
 	// connect to localhost at port 5000
 	// var ws = new WebSocket('ws://127.0.0.1:5000');
@@ -34,35 +34,40 @@ window.onload = function () {
 		console.log(data);
 	});
 
+	socket.on('characteristic', function(data) {
+		console.log('received info about characteristics');
+		console.log(data);
+	});
 
-	function setup() {
 
-		// Spacebrew
-		sb = new Spacebrew.Client({reconnect:true});
+	// function setup() {
 
-		sb.name = app_name;
-		sb.description("Shell application");
+	// 	// Spacebrew
+	// 	sb = new Spacebrew.Client({reconnect:true});
 
-		sb.addPublish ( "boolPublisher", "boolean", "false" );
-		sb.addSubscribe ( "boolSubscriber", "boolean" );
+	// 	sb.name = app_name;
+	// 	sb.description("Shell application");
 
-		sb.onBooleanMessage = onBooleanMessage;
-		sb.onCustomMessage = onCustomMessage;
+	// 	sb.addPublish ( "boolPublisher", "boolean", "false" );
+	// 	sb.addSubscribe ( "boolSubscriber", "boolean" );
 
-		// connect to Spacebrew
-		sb.connect();
+	// 	sb.onBooleanMessage = onBooleanMessage;
+	// 	sb.onCustomMessage = onCustomMessage;
 
-		function onBooleanMessage ( name, value ) {
+	// 	// connect to Spacebrew
+	// 	sb.connect();
 
-		}
+	// 	function onBooleanMessage ( name, value ) {
 
-		function onCustomMessage ( name, value, type ) {
+	// 	}
 
-		}
+	// 	function onCustomMessage ( name, value, type ) {
 
-	}
+	// 	}
 
-	// kick things off
-	setup();
+	// }
+
+	// // kick things off
+	// setup();
 
 }
