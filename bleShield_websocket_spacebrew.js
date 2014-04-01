@@ -38,7 +38,7 @@ io.sockets.on('connection', function(socket) {
   // connect Spacebrew only after socket connected
   ConnectSpacebrew();
   // discover bluetooth devices only after socket connected (consider making callback from Spacebrew connection)
-  BlueToothDiscover();
+  InitializeBluetooth();
 
 })
 
@@ -98,7 +98,45 @@ function ConnectSpacebrew() {
   // }); // end of noble statechange function
 } // end of ConnectSpacebrew() function
 
-function BlueToothDiscover() {
+function InitializeBluetooth() {
+
+  // because this doesn't get called until after the socket connection
+  // is made, if bluetooth is already on, there's no state change, and
+  // the 'stateChange' function doesn't get called
+
+  // therefore, for now, just start scanning
+  noble.startScanning();
+  console.log('started scanning');
+
+  // state change of bluetooth causes computer to scan for devices
+  noble.on('stateChange', function(state) {
+    console.log('stateChange function called');
+
+    if (state === 'poweredOn') {
+      console.log('state is powered on');
+      noble.startScanning();
+    } else {
+      noble.stopScanning();
+      console.log('scanning stopped');
+    }
+
+    if (state === 'unknown') {
+      console.log('state is unknown');
+    }
+
+    if (state === 'resetting') {
+      console.log('state is resetting');
+    }
+
+    if (state==='unsupported') {
+      console.log('state is unsupported');
+    }
+
+    if (state==='unauthorized') {
+      console.log('state is unauthorized');
+    }
+  }); // end of noble statechange function
+
   console.log('starting bluetooth discover function');
   noble.on('discover', function(peripheral) {
     console.log('peripheral discovered (' + peripheral.uuid+ '):');
@@ -140,9 +178,9 @@ function BlueToothDiscover() {
           var characteristics = services[0].discoverCharacteristics(null, function(error, characteristics) {
             console.log('discovered the following characteristics');
             if (connectedSocket !== undefined) {
-              var stringifiedCharacteristics = characteristics.stringify();
-              connectedSocket.emit('characteristic', characteristics);
-              util.log('sending info');
+              // var stringifiedCharacteristics = characteristics.stringify();
+              // connectedSocket.emit('characteristic', characteristics);
+              util.log('this is where we would have sent info');
             }
             for (var i in characteristics) {
 
@@ -161,59 +199,7 @@ function BlueToothDiscover() {
             }
           })
         })
-        // peripheral.discoverServices(null, function(error, services) {
-        //   console.log('discovered the following services: ');
-        //   for (var j in services) {
-        //     console.log(' ' + j + '\tservices uuid: ' + services[j].uuid);   
-
-        //     var serviceCharacteristics = services[j].discoverCharacteristics(null, function(error, characteristics) {
-        //       console.log('looking for characteristics');
-        //       for (var k in serviceCharacteristics) {
-        //         console.log(' ' + k + '\tcharacteristics uuid: ' + serviceCharacteristics[k]);
-        //         var currentCharacteristic = serviceCharacteristics[k];
-        //         currentCharacteristic.read(function(error, data) {
-        //           console.log('reading the data: ', data.toString('utf8'));
-        //         })
-        //       }
-        //     })
-
-        //     var specificService = services[2].discoverCharacteristics(null, function(error, characteristics) {
-        //       console.log('looking for characteristics');
-        //       console.log('number of characteristics: ' + specificService.length);
-        //       for (var k in serviceCharacteristics) {
-        //         console.log(' ' + k + '\tcharacteristics uuid: ' + serviceCharacteristics[k]);
-        //         var currentCharacteristic = serviceCharacteristics[k];
-        //         currentCharacteristic.read(function(error, data) {
-        //           console.log('reading the data: ', data.toString('utf8'));
-        //         })
-        //       }
-        //     })
-        //   }
-        //   var deviceInformationService = services[0];
-        //   console.log('discovered device information service');
-
-        //   deviceInformationService.discoverCharacteristics(null, function(error, characteristics) {
-        //     console.log('discover the following characteristics: ');
-        //     for (var i in characteristics) {
-        //       console.log('  ' + i + 'characteristics uuid: ' + characteristics[i].uuid);
-        //       var currentCharacteristic = characteristics[i];
-        //       currentCharacteristic.read(function(error, data) {
-        //         console.log('reading the data:', data.toString('utf8'));  
-        //       })
-        //     }
-        //   });
-        // });
-
-        // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
-        //   console.log('discovered specific service');
-        //   services.discoverCharacteristics(null, function(error, characteristics) {
-        //     for (var m in characteristics) {
-        //       console.log('characteristic ' + m + ': ' + characteristics[m].uuid);
-        //     }
-        //   });
-        // });
-
       });
     } // end of if-statement to make sure connecting only to BLE-SHIELD
   });
-} // end of BlueToothDiscover() function
+} // end of InitializeBluetooth() function
