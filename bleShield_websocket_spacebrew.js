@@ -9,8 +9,8 @@ https://github.com/sandeepmistry/noble/wiki/Getting-started
 
 *****************************/
 
-// creating socket.io connection
 var util = require('util');
+// creating socket.io connection
 var connect = require('connect');
 // Spacebrew connection
 var Spacebrew = require('./spacebrew.js').Spacebrew;
@@ -19,6 +19,7 @@ var noble = require('noble');
 
 var port = process.env.PORT || 5000;
 
+// make this a global variable so can be accessed within multiple parts of the app
 var sb = new Spacebrew.Client();
 
 // create web server
@@ -32,15 +33,16 @@ var io = require('socket.io').listen(app);
 
 io.set('log level', 2);
 
+// this will reflect when a user has connected from the browser
 var connectedSocket;
 io.sockets.on('connection', function(socket) {
   connectedSocket = socket;
 
+  // Connect Spacebrew and Bluetooth only after user has connected
   // connect Spacebrew only after socket connected
   ConnectSpacebrew();
   // discover bluetooth devices only after socket connected (consider making callback from Spacebrew connection)
   InitializeBluetooth();
-
 })
 
 // Spacebrew
@@ -52,15 +54,11 @@ function ConnectSpacebrew() {
       // var sb = new Spacebrew.Client();  // create spacebrew client object
 
       sb.name("BLUETOOTH");
-      sb.description("This app sends text from an HTML form."); // set the app description
+      sb.description("This app routes information from an arduino BLE Shield."); // set the app description
 
       // create the spacebrew subscription channels
       sb.addPublish("text", "string", "");  // create the publication feed
       sb.addSubscribe("text", "string");    // create the subscription feed
-
-
-      // configure the publication and subscription feeds
-      // sb.onStringMessage = function () { console.log("onStringMessage") };
 
       sb.onStringMessage = onStringMessage;
       sb.onOpen = function () { console.log("Spacebrew is open") };
@@ -72,9 +70,12 @@ function ConnectSpacebrew() {
     }
 } // end of ConnectSpacebrew() function
 
+// Called when Spacebrew receives a string message
 function onStringMessage(name, value) {
+  // message to terminal console
   console.log("Receiving Spacebrew string message");
   console.log("Value is ", value);
+  // message to browser via socket
   connectedSocket.emit('from spacebrew with love', value);
   console.log('sent value via websockets to browser');
 }
@@ -86,7 +87,7 @@ function InitializeBluetooth() {
   // is made, if bluetooth is already on, there's no state change, and
   // the 'stateChange' function doesn't get called
 
-  // therefore, for now, just start scanning
+  // therefore, just start scanning as soon as it's called
   noble.startScanning();
   console.log('started scanning');
 
@@ -97,6 +98,7 @@ function InitializeBluetooth() {
     if (state === 'poweredOn') {
       console.log('state is powered on');
       noble.startScanning();
+      console.log('started scanning');
     } else {
       noble.stopScanning();
       console.log('scanning stopped');
@@ -119,6 +121,7 @@ function InitializeBluetooth() {
     }
   }); // end of noble statechange function
 
+  // following function called when noble detects any BLE device
   console.log('starting bluetooth discover function');
   noble.on('discover', function(peripheral) {
     console.log('peripheral discovered (' + peripheral.uuid+ '):');
@@ -139,10 +142,10 @@ function InitializeBluetooth() {
       console.log('\t\t' + peripheral.advertisement.txPowerLevel);
     }
 
-    // connect to a peripheral if it is the RedBear BLE shield
+    // if the device is the RedBear BLE shield, connect
     if (peripheral.uuid === 'd49abe6bfb9b4bc8847238f760413d91') {
 
-      peripheral.connect(function(stuff) {
+      peripheral.connect(function(error) {
         console.log('peripheral connected:', peripheral.advertisement.localName);
         console.log('full information', peripheral.advertisement);
         console.log('peripheral uuid:', peripheral.uuid);
@@ -156,8 +159,8 @@ function InitializeBluetooth() {
         // there are four discoverable services on the BLE Shield; the one below is always the third one
         peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
           console.log('discovered service from RedBear BLE shield.');
-          console.log('its size is: ' + services.size);
-          console.log('its rssi is: ', services[0].rssi);
+          console.log('its size is: ' + services.size); // use length?
+          console.log('its rssi is: ', services[0].rssi); // undefined
           var characteristics = services[0].discoverCharacteristics(null, function(error, allCharacteristics) {
             console.log('discovered the following characteristics');
             if (connectedSocket !== undefined) {
@@ -184,7 +187,7 @@ function InitializeBluetooth() {
             } // end of for loop
 
 
-            // NOTE: IF SET INTERVAL IS SET TO ON, SPITS OUT DATA TO CONSOLE LIKE CRAZY AND
+            // NOTE: IF USE setInterval() FUNCTION, SPITS OUT DATA TO CONSOLE LIKE CRAZY AND
             // EVENTUALLY ABORTS
             // setInterval(function() {
 
