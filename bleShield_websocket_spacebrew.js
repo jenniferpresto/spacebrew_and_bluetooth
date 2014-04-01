@@ -42,12 +42,9 @@ io.sockets.on('connection', function(socket) {
 
 })
 
-
 // Spacebrew
 function ConnectSpacebrew() {
   var not_init = true;
-
-  // noble.on('stateChange', function(state) {
 
     if (not_init) {
       // setup spacebrew
@@ -69,35 +66,10 @@ function ConnectSpacebrew() {
 
       not_init = false;
     }
-
-    // console.log('stateChange function called');
-    // if (state === 'poweredOn') {
-    //   console.log('state is powered on');
-    //   noble.startScanning();
-    // } else {
-    //   noble.stopScanning();
-    //   console.log("scanning stopped");
-    // }
-
-    // if (state === 'unknown') {
-    //   console.log('state is unknown');
-    // }
-
-    // if (state === 'resetting') {
-    //   console.log('state is resetting');
-    // }
-
-    // if (state==='unsupported') {
-    //   console.log('state is unsupported');
-    // }
-
-    // if (state==='unauthorized') {
-    //   console.log('state is unauthorized');
-    // }
-
-  // }); // end of noble statechange function
 } // end of ConnectSpacebrew() function
 
+
+// bluetooth
 function InitializeBluetooth() {
 
   // because this doesn't get called until after the socket connection
@@ -171,7 +143,7 @@ function InitializeBluetooth() {
         }
 
         // discover services
-        // there are four discoverable services; the one below is always the third one
+        // there are four discoverable services on the BLE Shield; the one below is always the third one
         peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
           console.log('discovered service from RedBear BLE shield.');
           console.log('its size is: ' + services.size);
@@ -182,21 +154,35 @@ function InitializeBluetooth() {
               // connectedSocket.emit('characteristic', characteristics);
               util.log('this is where we would have sent info');
             }
+
+            // print uuid for both characteristics in the service
             for (var i in characteristics) {
 
               console.log( ' ' + i + ' uuid: ' + characteristics[i].uuid);
               console.log(' ' + i + ' name: ' + characteristics[i].name);
-              var currentCharacteristic = characteristics[i];
 
               // if (connectedSocket !== undefined) {
               //   connectedSocket.emit('characteristic', characteristics[i]);
               //   util.log('sending info');
               // }
 
-              currentCharacteristic.read(function(error, data) {
-                console.log('reading data: ', data);
+              characteristics[i].read(function(error, data) {
+                console.log('reading data for characteristic ' + i + ': ', data);
               })
             }
+
+            // one characteristic is for reading data from BLE shield
+            services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristic) {
+              console.log('specific characteristic');
+              console.log(characteristic);
+              console.log('\n');
+              console.log('characteristic _noble');
+              console.log('_noble: ', characteristic[0]._noble);
+              // connectedSocket.emit('characteristic', characteristic[0]._noble);
+              console.log('\n');
+              console.log('_peripherals: ', characteristic[0]._noble._peripherals);
+              console.log('_properties: ', characteristic[0]._noble._properties);
+            })
           })
         })
       });
