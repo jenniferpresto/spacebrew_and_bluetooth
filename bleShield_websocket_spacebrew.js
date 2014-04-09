@@ -155,6 +155,18 @@ function InitializeBluetooth() {
           util.log('sending info');
         }
 
+        setInterval(function () {
+          console.log("calling updateRssi function");
+          peripheral.updateRssi(function(error, rssi) {
+            console.log("the error: " + error);
+            console.log("the rssi: " + rssi);
+          });
+
+        }, 1000);
+
+        peripheral.emit('rssiUpdate');
+        console.log('peripheral emit');
+
         // discover services
         // there are four discoverable services on the BLE Shield; the one below is always the third one
         peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
