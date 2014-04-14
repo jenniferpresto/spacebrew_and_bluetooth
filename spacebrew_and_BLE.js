@@ -36,7 +36,7 @@ function ConnectSpacebrew() {
 
       // create the spacebrew subscription channels
       sb.addPublish("text", "string", "");  // create the publication feed
-      sb.addSubscribe("text", "string");    // create the subscription feed
+      // sb.addSubscribe("text", "string");    // create the subscription feed
 
       sb.onStringMessage = onStringMessage;
 
