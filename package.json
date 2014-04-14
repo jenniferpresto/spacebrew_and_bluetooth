@@ -1,0 +1,16 @@
+{
+  "name": "Spacebrew_ble",
+  "version": "0.0.0.1 Beta",
+  "description": "This app routes information from an arduino BLE Shield. By Jennifer Presto and Gustavo Faria for Spacebrew collab at Parsons.",
+  "main": "spacebrew_and_BLE.js",
+  "scripts": {
+    "start": "node spacebrew_and_BLE.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "noble": "^0.3.0",
+    "spacebrew": "0.0.2"
+  }
+}
