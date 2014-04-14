@@ -138,7 +138,8 @@ function InitializeBluetooth() {
           console.log("calling updateRssi function");
           peripheral.updateRssi(function(error, rssi) {
             console.log("the error: " + error);
-            console.log("the rssi: " + rssi);
+            console.log("the rssi: " + rssi.toString());
+            sb.send("text", rssi.toString());
           });
 
         }, 1000);
