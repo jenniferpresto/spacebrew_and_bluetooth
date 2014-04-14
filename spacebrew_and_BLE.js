@@ -141,7 +141,8 @@ function InitializeBluetooth() {
               console.log("the error: " + error);
             }
             console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
-            sb.send("text", rssi.toString());
+            var ble_signal = Math.abs(rssi.toString());
+            sb.send("text", "string", ble_signal);
           });
         }, 1000);
       });
