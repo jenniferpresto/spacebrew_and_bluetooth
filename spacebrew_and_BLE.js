@@ -135,15 +135,34 @@ function InitializeBluetooth() {
         console.log('Connected to ', peripheral.advertisement.localName);
 
         setInterval(function () {
-          console.log("calling updateRssi function");
           peripheral.updateRssi(function(error, rssi) {
-            console.log("the error: " + error);
-            console.log("the rssi: " + rssi.toString());
+            console.log('inside rssi update function for BLE-SHIELD device');
+            if (error) {
+              console.log("the error: " + error);
+            }
+            console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
             sb.send("text", rssi.toString());
           });
-
         }, 1000);
       });
     } // end of if-statement to make sure connecting only to BLE-SHIELD
+
+    if (peripheral.uuid === '711dcc109ff1434a80dcfdbf9e62d49e') {
+      peripheral.connect(function(error) {
+        console.log('Connected to ', peripheral.advertisement.localName);
+
+        setInterval(function () {
+          peripheral.updateRssi(function(error, rssi) {
+            console.log('inside rssi update function for FLEX device');
+            if (error) {
+              console.log("the error: " + error);
+            }
+            console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
+            sb.send("text", rssi.toString());
+          });
+        }, 1000);
+      });
+    } // end of if-statement about FLEX device
+
   });
 } // end of InitializeBluetooth() function
