@@ -158,11 +158,27 @@ function InitializeBluetooth() {
             if (error) {
               console.log("the error: " + error);
             }
-            console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
+            console.log("Rssi for " + peripheral.advertisement.localName + ": " + rssi.toString());
             var ble_signal = Math.abs(rssi.toString());
             sb.send("text", "string", ble_signal);
           });
         }, 1000);
+
+        peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
+          console.log('services discovered: length is ' + services.length);
+          console.log('services: ' + services[0]);
+          services[0].discoverCharacteristics(null, function(error, allCharacteristics) {
+            console.log('characteristics length: ' + allCharacteristics.length);
+            console.log('characteristic0' + allCharacteristics[0]);
+            console.log('characteristic1' + allCharacteristics[1]);
+            allCharacteristics[0].read(function(error, data) {
+              console.log('data0', data);
+            });
+            allCharacteristics[1].read(function(error, data) {
+              console.log('data1', data);
+            });
+          })
+        })
       });
     } // end of if-statement to make sure connecting only to BLE-JENNIFER
 
