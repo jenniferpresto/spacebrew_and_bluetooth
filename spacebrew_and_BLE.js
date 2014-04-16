@@ -136,7 +136,7 @@ function InitializeBluetooth() {
 
         setInterval(function () {
           peripheral.updateRssi(function(error, rssi) {
-            console.log('inside rssi update function for BLE-SHIELD device');
+            console.log('inside rssi update function for BLE-GUS device');
             if (error) {
               console.log("the error: " + error);
             }
@@ -146,7 +146,25 @@ function InitializeBluetooth() {
           });
         }, 1000);
       });
-    } // end of if-statement to make sure connecting only to BLE-SHIELD
+    } // end of if-statement to make sure connecting only to BLE-GUS
+
+    if (peripheral.uuid === '9e2aab25f29d49078577c1559f8f343d') {
+      peripheral.connect(function(error) {
+        console.log('Connected to ', peripheral.advertisement.localName);
+
+        setInterval(function () {
+          peripheral.updateRssi(function(error, rssi) {
+            console.log('inside rssi update function for BLE-JENNIFER device');
+            if (error) {
+              console.log("the error: " + error);
+            }
+            console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
+            var ble_signal = Math.abs(rssi.toString());
+            sb.send("text", "string", ble_signal);
+          });
+        }, 1000);
+      });
+    } // end of if-statement to make sure connecting only to BLE-GUS
 
     if (peripheral.uuid === '711dcc109ff1434a80dcfdbf9e62d49e') {
       peripheral.connect(function(error) {
