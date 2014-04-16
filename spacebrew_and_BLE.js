@@ -164,7 +164,7 @@ function InitializeBluetooth() {
           });
         }, 1000);
       });
-    } // end of if-statement to make sure connecting only to BLE-GUS
+    } // end of if-statement to make sure connecting only to BLE-JENNIFER
 
     if (peripheral.uuid === '711dcc109ff1434a80dcfdbf9e62d49e') {
       peripheral.connect(function(error) {
