@@ -178,17 +178,8 @@ function InitializeBluetooth() {
                 console.log('reading data: ', data);
               })
             });
-            console.log('hit notify function');
-            console.log('now read function');
-            txCharacteristic.read(function(error, data) {
-              // console.log('data is ', data.toString('utf8'));
-            });
-            console.log('now on read');
-            txCharacteristic.on('read', function(data, isNotification) {
-              console.log('reading data!: ', data);
-            })
-          })
-        })
+          });
+        });
 
         // setInterval(function () {
         //   peripheral.updateRssi(function(error, rssi) {
@@ -219,24 +210,5 @@ function InitializeBluetooth() {
         // })
       });
     } // end of if-statement to make sure connecting only to BLE-JGP
-
-    // if-statement for fitbit is for fitbit
-    // if (peripheral.uuid === '711dcc109ff1434a80dcfdbf9e62d49e') {
-    //   peripheral.connect(function(error) {
-    //     console.log('Connected to ', peripheral.advertisement.localName);
-
-    //     setInterval(function () {
-    //       peripheral.updateRssi(function(error, rssi) {
-    //         console.log('inside rssi update function for FLEX device');
-    //         if (error) {
-    //           console.log("the error: " + error);
-    //         }
-    //         console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
-    //         sb.send("text", rssi.toString());
-    //       });
-    //     }, 1000);
-    //   });
-    // } // end of if-statement about FLEX device
-
   });
 } // end of InitializeBluetooth() function
