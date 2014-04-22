@@ -25,6 +25,7 @@ void setup()
   //ble_set_pins(3, 2);
   
   // Init. and start BLE library.
+  ble_set_name("BLE_JGP");
   ble_begin();
   
   // Enable serial debug

@@ -1,0 +1,29 @@
+{
+  "name": "sensordrone",
+  "version": "0.0.2",
+  "description": "node.js lib for the Sensordrone",
+  "main": "index.js",
+  "scripts": {
+    "test": "jshint *.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sandeepmistry/node-sensordrone.git"
+  },
+  "keywords": [
+    "sensordrone",
+    "sensor drone"
+  ],
+  "author": "Sandeep Mistry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sandeepmistry/node-sensordrone/issues"
+  },
+  "dependencies": {
+    "noble": "~0.2.0"
+  },
+  "devDependencies": {
+    "async": "~0.2.9",
+    "jshint": "~2.1.10"
+  }
+}

@@ -130,9 +130,18 @@ function InitializeBluetooth() {
 
     // if the device is the RedBear BLE shield, connect
     if (peripheral.uuid === 'd49abe6bfb9b4bc8847238f760413d91') {
-
       peripheral.connect(function(error) {
         console.log('Connected to ', peripheral.advertisement.localName);
+
+        // discover the service on which transmission will happen
+        peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
+          console.log('discovered service: ' + services[0].uuid);
+
+          // discover notify characteristic (where we read tx from BLE device)
+          services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
+            console.log('discovered characteristic: ', characteristics[0]);
+          })
+        })
 
         setInterval(function () {
           peripheral.updateRssi(function(error, rssi) {
@@ -148,56 +157,86 @@ function InitializeBluetooth() {
       });
     } // end of if-statement to make sure connecting only to BLE-GUS
 
+
+    // if statement to connect to BLE-JGP
     if (peripheral.uuid === '9e2aab25f29d49078577c1559f8f343d') {
       peripheral.connect(function(error) {
         console.log('Connected to ', peripheral.advertisement.localName);
 
-        setInterval(function () {
-          peripheral.updateRssi(function(error, rssi) {
-            console.log('inside rssi update function for BLE-JENNIFER device');
-            if (error) {
-              console.log("the error: " + error);
-            }
-            console.log("Rssi for " + peripheral.advertisement.localName + ": " + rssi.toString());
-            var ble_signal = Math.abs(rssi.toString());
-            sb.send("text", "string", ble_signal);
-          });
-        }, 1000);
-
+        // discover the service on which transmission will happen
         peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
-          console.log('services discovered: length is ' + services.length);
-          console.log('services: ' + services[0]);
-          services[0].discoverCharacteristics(null, function(error, allCharacteristics) {
-            console.log('characteristics length: ' + allCharacteristics.length);
-            console.log('characteristic0' + allCharacteristics[0]);
-            console.log('characteristic1' + allCharacteristics[1]);
-            allCharacteristics[0].read(function(error, data) {
-              console.log('data0', data);
+          console.log('discovered service: ' + services[0].uuid);
+
+          // discover notify characteristic (where we read tx from BLE device)
+          services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
+            console.log('discovered characteristic: ', characteristics[0]);
+            var txCharacteristic = characteristics[0];
+            txCharacteristic.notify(true, function(error) {
+              console.log('notification is on');
+              // callback to read data
+              txCharacteristic.on('read', function(data, isNotification) {
+                console.log('reading data: ', data);
+              })
             });
-            allCharacteristics[1].read(function(error, data) {
-              console.log('data1', data);
+            console.log('hit notify function');
+            console.log('now read function');
+            txCharacteristic.read(function(error, data) {
+              // console.log('data is ', data.toString('utf8'));
             });
+            console.log('now on read');
+            txCharacteristic.on('read', function(data, isNotification) {
+              console.log('reading data!: ', data);
+            })
           })
         })
-      });
-    } // end of if-statement to make sure connecting only to BLE-JENNIFER
 
-    if (peripheral.uuid === '711dcc109ff1434a80dcfdbf9e62d49e') {
-      peripheral.connect(function(error) {
-        console.log('Connected to ', peripheral.advertisement.localName);
+        // setInterval(function () {
+        //   peripheral.updateRssi(function(error, rssi) {
+        //     console.log('inside rssi update function for BLE-JENNIFER device');
+        //     if (error) {
+        //       console.log("the error: " + error);
+        //     }
+        //     console.log("Rssi for " + peripheral.advertisement.localName + ": " + rssi.toString());
+        //     var ble_signal = Math.abs(rssi.toString());
+        //     sb.send("text", "string", ble_signal);
+        //   });
+        // }, 1000);
 
-        setInterval(function () {
-          peripheral.updateRssi(function(error, rssi) {
-            console.log('inside rssi update function for FLEX device');
-            if (error) {
-              console.log("the error: " + error);
-            }
-            console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
-            sb.send("text", rssi.toString());
-          });
-        }, 1000);
+        // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
+        //   console.log('services discovered: length is ' + services.length);
+        //   console.log('services: ' + services[0]);
+        //   services[0].discoverCharacteristics(null, function(error, allCharacteristics) {
+        //     console.log('characteristics length: ' + allCharacteristics.length);
+        //     console.log('characteristic0' + allCharacteristics[0]);
+        //     console.log('characteristic1' + allCharacteristics[1]);
+        //     allCharacteristics[0].read(function(error, data) {
+        //       console.log('data0', data);
+        //     });
+        //     allCharacteristics[1].read(function(error, data) {
+        //       console.log('data1', data);
+        //     });
+        //   })
+        // })
       });
-    } // end of if-statement about FLEX device
+    } // end of if-statement to make sure connecting only to BLE-JGP
+
+    // if-statement for fitbit is for fitbit
+    // if (peripheral.uuid === '711dcc109ff1434a80dcfdbf9e62d49e') {
+    //   peripheral.connect(function(error) {
+    //     console.log('Connected to ', peripheral.advertisement.localName);
+
+    //     setInterval(function () {
+    //       peripheral.updateRssi(function(error, rssi) {
+    //         console.log('inside rssi update function for FLEX device');
+    //         if (error) {
+    //           console.log("the error: " + error);
+    //         }
+    //         console.log("Rssi for " + peripheral.localName + ": " + rssi.toString());
+    //         sb.send("text", rssi.toString());
+    //       });
+    //     }, 1000);
+    //   });
+    // } // end of if-statement about FLEX device
 
   });
 } // end of InitializeBluetooth() function
