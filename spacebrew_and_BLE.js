@@ -113,6 +113,7 @@ function InitializeBluetooth() {
   }); // end of noble statechange function
 
   // following function called when noble detects any BLE device
+  // prints to console name, services, etc. 
   console.log('initializing bluetooth discover function');
   noble.on('discover', function(peripheral) {
     console.log('peripheral discovered (' + peripheral.uuid + '):');
@@ -133,59 +134,59 @@ function InitializeBluetooth() {
       console.log('\t\t' + peripheral.advertisement.txPowerLevel);
     }
 
-    // if the device is the RedBear BLE shield - GUS, connect
-    if (peripheral.uuid === 'd49abe6bfb9b4bc8847238f760413d91') {
+    // if the device is either of the two RedBear BLE shields -- GUS or JGP -- connects
+    if (peripheral.uuid === 'd49abe6bfb9b4bc8847238f760413d91' || peripheral.uuid === '9e2aab25f29d49078577c1559f8f343d') {
       peripheral.connect(function(error) {
         console.log('Connected to ', peripheral.advertisement.localName);
 
         // discover the service on which transmission will happen
-        peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
-          console.log('discovered service: ' + services[0].uuid);
-
-          // discover notify characteristic (where we read tx from BLE device)
-          services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
-            console.log('discovered characteristic: ', characteristics[0]);
-          })
-        })
-
-        UpdateRSSIAndAverage(peripheral);
-      });
-    } // end of if-statement to make sure connecting only to BLE-GUS
-
-
-    // if statement to connect to BLE-JGP
-    if (peripheral.uuid === '9e2aab25f29d49078577c1559f8f343d') {
-      peripheral.connect(function(error) {
-        console.log('Connected to ', peripheral.advertisement.localName);
-
-        // // discover the service on which transmission will happen
         // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
         //   console.log('discovered service: ' + services[0].uuid);
 
         //   // discover notify characteristic (where we read tx from BLE device)
         //   services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
         //     console.log('discovered characteristic: ', characteristics[0]);
-        //     var txCharacteristic = characteristics[0];
-        //     txCharacteristic.notify(true, function(error) {
-        //       console.log('notification is on');
-        //       // callback to read data
-        //       txCharacteristic.on('read', function(data, isNotification) {
-        //         console.log('isNotification: ', isNotification);
-        //         console.log('reading data: ', data);
-        //         console.log('reading data decimal utf8: ', data.toString('utf8'));
-        //         console.log('reading data UInt8: ', data.readUInt8(0));
-        //         // console.log('reading data UInt8: ', data.readUInt8(1));
-        //         // console.log('reading data UInt8: ', data.readUInt8(2));
-        //         // console.log('hexstring: ', data.parseInt(hexstring, 16));
-        //         console.log('typeof: ', typeof data);
-        //       })
-        //     });
-        //   });
-        // });
-
+        //   })
+        // })
+        ReadButtonPress(peripheral);
         UpdateRSSIAndAverage(peripheral);
       });
-    } // end of if-statement to make sure connecting only to BLE-JGP
+    } // end of if-statement to make sure connecting only to BLE-GUS
+
+
+    // // if statement to connect to BLE-JGP
+    // if (peripheral.uuid === '9e2aab25f29d49078577c1559f8f343d') {
+    //   peripheral.connect(function(error) {
+    //     console.log('Connected to ', peripheral.advertisement.localName);
+    //     ReadButtonPress(peripheral);
+    //     // // discover the service on which transmission will happen
+    //     // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
+    //     //   console.log('discovered service: ' + services[0].uuid);
+
+    //     //   // discover notify characteristic (where we read tx from BLE device)
+    //     //   services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
+    //     //     console.log('discovered characteristic: ', characteristics[0]);
+    //     //     var txCharacteristic = characteristics[0];
+    //     //     txCharacteristic.notify(true, function(error) {
+    //     //       console.log('notification is on');
+    //     //       // callback to read data
+    //     //       txCharacteristic.on('read', function(data, isNotification) {
+    //     //         console.log('isNotification: ', isNotification);
+    //     //         console.log('reading data: ', data);
+    //     //         console.log('reading data decimal utf8: ', data.toString('utf8'));
+    //     //         console.log('reading data UInt8: ', data.readUInt8(0));
+    //     //         // console.log('reading data UInt8: ', data.readUInt8(1));
+    //     //         // console.log('reading data UInt8: ', data.readUInt8(2));
+    //     //         // console.log('hexstring: ', data.parseInt(hexstring, 16));
+    //     //         console.log('typeof: ', typeof data);
+    //     //       })
+    //     //     });
+    //     //   });
+    //     // });
+
+    //     UpdateRSSIAndAverage(peripheral);
+    //   });
+    // } // end of if-statement to make sure connecting only to BLE-JGP
   });
 } // end of InitializeBluetooth() function
 
