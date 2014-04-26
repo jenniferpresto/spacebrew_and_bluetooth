@@ -44,8 +44,8 @@ function ConnectSpacebrew() {
       // sb.addPublish("button", "boolean", false); // create boolean for button press
 
       // add custom data type for rssi and for button
-      sb.addPublish("rssi", "rssiInfo", {deviceName:"", rssiValue:"0.0"});
-      sb.addPublish("button", "buttonInfo", {deviceName: "", buttonValue:"0.0"});
+      sb.addPublish("rssi", "rssi_info", {deviceName:"", rssiValue:""} );
+      sb.addPublish("button", "button_info", {deviceName: "", buttonValue:""} );
 
       sb.onStringMessage = onStringMessage;
 
@@ -193,8 +193,8 @@ function UpdateRSSIAndAverage (peripheral) {
         console.log('average results for ' + peripheral.advertisement.localName + ': ', averageResults1.average);
         if (counter1 > 50) {
           var rssiAvgData1 = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\",\"rssiValue\":\"' + averageResults1.average + '\"}';
-          console.log('rssiAvgData', rssiAvgData1);
-          sb.send("rssi", "rssiInfo", rssiAvgData1);
+          console.log('rssiAvgData1: ', rssiAvgData1);
+          sb.send("rssi", "rssi_info", rssiAvgData1);
           counter1 = 0;
         }
         counter1++;
@@ -206,8 +206,8 @@ function UpdateRSSIAndAverage (peripheral) {
         console.log('average results for ' + peripheral.advertisement.localName + ': ', averageResults2.average);
         if (counter2 > 50) {
           var rssiAvgData2 = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\",\"rssiValue\":\"' + averageResults2.average + '\"}';
-          console.log('rssiAvgData', rssiAvgData2);
-          sb.send("rssi", "rssiInfo", rssiAvgData2);
+          console.log('rssiAvgData2: ', rssiAvgData2);
+          sb.send("rssi", "rssi_info", rssiAvgData2);
           counter2 = 0;
         }
         counter2++;
@@ -242,7 +242,7 @@ function ReadButtonPress(peripheral) {
           console.log('reading data UInt8: ', data.readUInt8(0));
           var buttonData = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\", \"buttonValue\":' + data.readUInt8(0).toString() + '}';
           console.log("buttonData: ", buttonData);
-          sb.send("button", "buttonInfo", buttonData);
+          sb.send("button", "button_info", buttonData);
         });
       });
     });
