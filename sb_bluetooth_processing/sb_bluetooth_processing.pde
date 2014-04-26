@@ -28,4 +28,12 @@ void draw() {
 void onCustomMessage ( String name, String type, String value) {
   println("onCustomMessage function called");
   println("name: " + name + " type: " + type + " value: " + value);
+  if (type.equals("button_info")) {
+    JSONObject buttonData = JSONObject.parse(value);
+    println("buttonData: " + buttonData);
+    
+  } else if (type.equals ("rssi_info")) {
+    JSONObject rssiData = JSONObject.parse(value);
+    println("rssiData: " + rssiData);
+  }
 }
