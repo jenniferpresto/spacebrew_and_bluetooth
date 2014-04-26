@@ -8,7 +8,7 @@ the shield via BLE signal.
 #include <boards.h>
 #include <ble_shield.h>
 #include <services.h>
-#include <Servo.h> 
+//#include <Servo.h> 
  
 #define DIGITAL_OUT_PIN    4
 #define DIGITAL_IN_PIN     5
@@ -16,7 +16,7 @@ the shield via BLE signal.
 #define SERVO_PIN          7
 #define ANALOG_IN_PIN      A5
 
-Servo myservo;
+//Servo myservo;
 
 void setup()
 {
@@ -25,8 +25,8 @@ void setup()
   //ble_set_pins(3, 2);
   
   // Init. and start BLE library.
-  ble_set_name("BLE_JGP");
   ble_begin();
+  ble_set_name("BLE_JGP");
   
   // Enable serial debug
 //  Serial.begin(57600);
@@ -103,7 +103,7 @@ void loop()
     {
       ble_write(0x0A);
       ble_write(0x01);
-      ble_write(0x00);
+      ble_write(0xFF);
       Serial.println(0x0A);
       Serial.println("high");
     }
