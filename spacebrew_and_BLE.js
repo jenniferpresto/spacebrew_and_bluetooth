@@ -35,15 +35,17 @@ function ConnectSpacebrew() {
 
     if (not_init) {
       // setup spacebrew
-      // var sb = new Spacebrew.Client();  // create spacebrew client object
-
       sb.name("BLUETOOTH");
-      sb.description("This app routes information from an arduino BLE Shield."); // set the app description
+      sb.description("This app routes information from two arduino BLE Shields."); // set the app description
 
       // create the spacebrew subscription channels
-      sb.addPublish("text", "string", "");  // create the publication feed
-      // sb.addSubscribe("text", "string");    // create the subscription feed
-      sb.addPublish("button", "boolean", false); // create boolean for button press
+      // sb.addPublish("text", "string", "");  // create the publication feed
+      // // sb.addSubscribe("text", "string");    // create the subscription feed
+      // sb.addPublish("button", "boolean", false); // create boolean for button press
+
+      // add custom data type for rssi and for button
+      sb.addPublish("rssi", "rssiInfo", {deviceName:"", rssiValue:0});
+      sb.addPublish("button", "buttonInfo", {deviceName: "", buttonValue:0});
 
       sb.onStringMessage = onStringMessage;
 
@@ -62,7 +64,7 @@ function ConnectSpacebrew() {
 } // end of ConnectSpacebrew() function
 
 // Called when Spacebrew receives a string message
-// (not called in this particular app)
+// (not called in this particular app, because only sending messages, not receiving)
 function onStringMessage(name, value) {
   // message to terminal console
   console.log("Receiving Spacebrew string message");
@@ -139,54 +141,10 @@ function InitializeBluetooth() {
       peripheral.connect(function(error) {
         console.log('Connected to ', peripheral.advertisement.localName);
 
-        // discover the service on which transmission will happen
-        // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
-        //   console.log('discovered service: ' + services[0].uuid);
-
-        //   // discover notify characteristic (where we read tx from BLE device)
-        //   services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
-        //     console.log('discovered characteristic: ', characteristics[0]);
-        //   })
-        // })
         ReadButtonPress(peripheral);
         UpdateRSSIAndAverage(peripheral);
       });
     } // end of if-statement to make sure connecting only to BLE-GUS
-
-
-    // // if statement to connect to BLE-JGP
-    // if (peripheral.uuid === '9e2aab25f29d49078577c1559f8f343d') {
-    //   peripheral.connect(function(error) {
-    //     console.log('Connected to ', peripheral.advertisement.localName);
-    //     ReadButtonPress(peripheral);
-    //     // // discover the service on which transmission will happen
-    //     // peripheral.discoverServices(['713d0000503e4c75ba943148f18d941e'], function(error, services) {
-    //     //   console.log('discovered service: ' + services[0].uuid);
-
-    //     //   // discover notify characteristic (where we read tx from BLE device)
-    //     //   services[0].discoverCharacteristics(['713d0002503e4c75ba943148f18d941e'], function (error, characteristics) {
-    //     //     console.log('discovered characteristic: ', characteristics[0]);
-    //     //     var txCharacteristic = characteristics[0];
-    //     //     txCharacteristic.notify(true, function(error) {
-    //     //       console.log('notification is on');
-    //     //       // callback to read data
-    //     //       txCharacteristic.on('read', function(data, isNotification) {
-    //     //         console.log('isNotification: ', isNotification);
-    //     //         console.log('reading data: ', data);
-    //     //         console.log('reading data decimal utf8: ', data.toString('utf8'));
-    //     //         console.log('reading data UInt8: ', data.readUInt8(0));
-    //     //         // console.log('reading data UInt8: ', data.readUInt8(1));
-    //     //         // console.log('reading data UInt8: ', data.readUInt8(2));
-    //     //         // console.log('hexstring: ', data.parseInt(hexstring, 16));
-    //     //         console.log('typeof: ', typeof data);
-    //     //       })
-    //     //     });
-    //     //   });
-    //     // });
-
-    //     UpdateRSSIAndAverage(peripheral);
-    //   });
-    // } // end of if-statement to make sure connecting only to BLE-JGP
   });
 } // end of InitializeBluetooth() function
 
@@ -258,16 +216,19 @@ function ReadButtonPress(peripheral) {
       var txCharacteristic = characteristics[0];
       txCharacteristic.notify(true, function(error) {
         console.log('notification is on');
-        // callback to read data
+        // callback to read data when shield sends it
         txCharacteristic.on('read', function(data, isNotification) {
           console.log('isNotification: ', isNotification);
           console.log('reading data: ', data);
-          console.log('reading data decimal utf8: ', data.toString('utf8'));
+
+          // the BLE shields send hex data byte-by-byte, which is received in buffer form.
+          // Therefore, use readUInt8(x) to convert to decimal, where x is which byte it's receiving
+          // (like the index in an array).
+          // Here, we're receiving only one byte, so call only readUInt8(0).
           console.log('reading data UInt8: ', data.readUInt8(0));
-          // console.log('reading data UInt8: ', data.readUInt8(1));
-          // console.log('reading data UInt8: ', data.readUInt8(2));
-          // console.log('hexstring: ', data.parseInt(hexstring, 16));
-          console.log('typeof: ', typeof data);
+          var buttonData = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\", \"buttonValue\":' + data.readUInt8(0).toString() + '}';
+          console.log("buttonData: ", buttonData);
+          sb.send("button", "buttonInfo", buttonData);
         })
       });
     });
