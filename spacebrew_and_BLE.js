@@ -44,8 +44,8 @@ function ConnectSpacebrew() {
       // sb.addPublish("button", "boolean", false); // create boolean for button press
 
       // add custom data type for rssi and for button
-      sb.addPublish("rssi", "rssiInfo", {deviceName:"", rssiValue:0});
-      sb.addPublish("button", "buttonInfo", {deviceName: "", buttonValue:0});
+      sb.addPublish("rssi", "rssiInfo", {deviceName:"", rssiValue:"0.0"});
+      sb.addPublish("button", "buttonInfo", {deviceName: "", buttonValue:"0.0"});
 
       sb.onStringMessage = onStringMessage;
 
@@ -176,32 +176,46 @@ function CalculateAverage(someArray) {
 
 // function to average the RSSI of each peripheral and to send it periodically via Spacebrew
 function UpdateRSSIAndAverage (peripheral) {
-  // update RSSI every 100th of a second
+  // update RSSI every 100th of a second for each shield
+  var counter1 = 0;
+  var counter2 = 0;
+  // create variables to store the latest average rssi value for each shield
+  var averageResults1, averageResults2;
   setInterval(function () {
     peripheral.updateRssi(function(error, rssi) {
       if (error) {
         console.log("the error: " + error);
       }
-      var relevantArray = [];
       // if it's Gus's shield
       if (peripheral.uuid == 'd49abe6bfb9b4bc8847238f760413d91') {
-        relevantArray = numberArrayBLE1;
+        Generate_numArr(rssi, numberArrayBLE1);
+        averageResults1 = CalculateAverage(numberArrayBLE1);
+        console.log('average results for ' + peripheral.advertisement.localName + ': ', averageResults1.average);
+        if (counter1 > 50) {
+          var rssiAvgData1 = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\",\"rssiValue\":\"' + averageResults1.average + '\"}';
+          console.log('rssiAvgData', rssiAvgData1);
+          sb.send("rssi", "rssiInfo", rssiAvgData1);
+          counter1 = 0;
+        }
+        counter1++;
       }
       // if it's Jennifer's shield
       if (peripheral.uuid == '9e2aab25f29d49078577c1559f8f343d') {
-        relevantArray = numberArrayBLE2;
+        Generate_numArr(rssi, numberArrayBLE2);
+        averageResults2 = CalculateAverage(numberArrayBLE2);
+        console.log('average results for ' + peripheral.advertisement.localName + ': ', averageResults2.average);
+        if (counter2 > 50) {
+          var rssiAvgData2 = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\",\"rssiValue\":\"' + averageResults2.average + '\"}';
+          console.log('rssiAvgData', rssiAvgData2);
+          sb.send("rssi", "rssiInfo", rssiAvgData2);
+          counter2 = 0;
+        }
+        counter2++;
       }
 
-      Generate_numArr(rssi, relevantArray);
-      var averageResults = CalculateAverage(relevantArray);
-      console.log('average results for ' + peripheral.advertisement.localName + ': ', averageResults.average);
-      console.log('relevantArray length', averageResults.array.length);
-
       console.log("Rssi for " + peripheral.advertisement.localName + ": " + rssi.toString());
-      var ble_signal = Math.abs(rssi.toString());
-      // sb.send("text", "string", ble_signal);
     });
-  }, 100);
+  }, 10);
 };
 
 // function to read the button press of the relevant peripheral
@@ -229,7 +243,7 @@ function ReadButtonPress(peripheral) {
           var buttonData = '{\"deviceName\":\"' + peripheral.advertisement.localName + '\", \"buttonValue\":' + data.readUInt8(0).toString() + '}';
           console.log("buttonData: ", buttonData);
           sb.send("button", "buttonInfo", buttonData);
-        })
+        });
       });
     });
   });
