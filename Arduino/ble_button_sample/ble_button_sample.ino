@@ -11,6 +11,10 @@ the shield via BLE signal.
  
 #define DIGITAL_IN_PIN     5
 
+//To write -> ble_write(HEXAGON)
+//To read -> ble_read()
+// Read analog input and send out -> uint16_t value = analogRead(ANALOG_IN_PIN); 
+
 void setup()
 {
 
@@ -33,7 +37,7 @@ void loop()
   static boolean analog_enabled = false;
   static byte old_state = LOW;
   
-//  if (analog_enabled)  // if analog reading enabled
+  //  if (analog_enabled)  // if analog reading enabled
 //  {
 //    // Read and send out
 //    uint16_t value = analogRead(ANALOG_IN_PIN); 
@@ -46,12 +50,14 @@ void loop()
     
     if (digitalRead(DIGITAL_IN_PIN) == HIGH)
     { 
+      //write to BLE SHIELD 255 (BUTTONPRESSED)
       ble_write(0xFF);
       Serial.println(0xFF);
       Serial.println("high");
     }
     else
     {
+      //write 0 to BLE SHIELD (BUTTON NOT PRESSED)
       ble_write(0x00);
       Serial.println(0x00);
     }
@@ -66,6 +72,8 @@ void loop()
   // Allow BLE Shield to send/receive data
   ble_do_events();  
 }
+
+
 
 
 
