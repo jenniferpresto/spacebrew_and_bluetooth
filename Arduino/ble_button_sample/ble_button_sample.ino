@@ -40,6 +40,7 @@ void loop()
   // If digital in changes, report the state
   if (digitalRead(DIGITAL_IN_PIN) != old_state)
   {
+    digitalWrite(led, HIGH);
     old_state = digitalRead(DIGITAL_IN_PIN);
     
     if (digitalRead(DIGITAL_IN_PIN) == HIGH)
@@ -61,6 +62,7 @@ void loop()
   {
     analog_enabled = false;
     Serial.println("no ble connection");
+    digitalWrite(led, LOW);
   }
   
   // Allow BLE Shield to send/receive data
