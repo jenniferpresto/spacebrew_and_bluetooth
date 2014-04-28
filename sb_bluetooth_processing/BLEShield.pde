@@ -1,6 +1,6 @@
 class BLEShield {
-  float posX, posY;
-  float xVel, yVel;
+  PVector pos, vel, accel;
+  float maxSpeed;
   String name;
   float avgRSSI;
   boolean buttonDown;
@@ -10,41 +10,78 @@ class BLEShield {
 
   float timeLastNote;
   float timeLastCustomMessage;
+  float repulsionRadius;
 
+  //---------------------------
+  // Constructor
+  //---------------------------
   BLEShield() {
-    posX = random(20, width-20);
-    posY = random(20, height-20);
-    xVel = 0;
-    yVel = 0;
+    diameter = 50;
+    float radius = diameter/2;
+    repulsionRadius = radius * 1.5;
+
+    pos = new PVector(random(radius, width-radius), random(radius, height-radius));
+    vel = new PVector(0, 0);
+    accel =new PVector(0, 0);
+    maxSpeed = 2.5;
 
     name = "";
-    avgRSSI = 0.0;
+    avgRSSI = 100.0; // start big (which means small, since we take abs of rssi)
     buttonDown = false;
     initialized = false;
     float h = random(300, 360);
     float s = 50;
     float b = 50;
 
-    diameter = 50;
 
     timeLastNote = 0;
     timeLastCustomMessage = millis();
   }
 
+  //---------------------------
+  // Methods
+  //---------------------------
   void update() {
     // ease toward new diameter
-    float targetDiameter = map(avgRSSI, -80, -45, 40, 100);
+    float targetDiameter = map(avgRSSI, 65, 45, 40, 100);
+    // clamp targetDiameter
+    if (targetDiameter > 100) {
+      targetDiameter = 100;
+    } 
+    else if (targetDiameter < 40) {
+      targetDiameter = 40;
+    }
     diameter = (0.9 * diameter) + (0.1 * targetDiameter);
 
     // generally easing toward more neutral colors (will change when sounds are played
     s = (s * 0.9) + (50 * 0.1);
     b = (b * 0.9) + (50 * 0.1);
-    
+
     if (initialized && (millis() - timeLastCustomMessage > 2000)) {
       initialized = false;
     }
+
+    // movement
+    float radius = diameter/2;
+
+    if (pos.y < height - radius) {
+      addGravity();
+    } else {
+      accel.y -= 0.2;
+    }
+
+    repulsionRadius = radius * 1.5;
+    if (pos.x < repulsionRadius || pos.x > width - repulsionRadius ||  pos.y < repulsionRadius) {
+      attractToCenter();
+    }
+    
+    vel.add(accel);
+    vel.limit(maxSpeed);
+    pos.add(vel);
+    accel.set(0, 0);
   }
 
+  //---------------------------
   void playMusic(int index) {
     if (initialized && buttonDown) {
       // get the range for speed
@@ -52,10 +89,11 @@ class BLEShield {
       // clamp the results
       if (notesPerSecond < 3) {
         notesPerSecond = 3;
-      } else if (notesPerSecond > 10) {
+      } 
+      else if (notesPerSecond > 10) {
         notesPerSecond = 10;
       }
-      
+
       float millisNextNote = 1000/notesPerSecond;
 
       // if it's time to play a new note
@@ -69,10 +107,10 @@ class BLEShield {
         if (pitch > 22) {
           pitch = 22;
         }
-        
+
         // pick among a range of 5 notes from the anchor pitch
         int randNote = floor(random(pitch - 2, pitch + 2));
-        
+
         // Gus gets violins
         if (index == 0) {
           violinNotes[randNote].trigger();
@@ -81,9 +119,9 @@ class BLEShield {
         else {
           xyloNotes[randNote].trigger();
         }
-        
+
         timeLastNote = millis();
-        
+
         // visual cue
         s = 100;
         b = 100;
@@ -91,6 +129,7 @@ class BLEShield {
     }
   }
 
+  //---------------------------
   void visualize() {
     if (initialized) {
       fill(h, s, b);
@@ -98,12 +137,38 @@ class BLEShield {
     else {
       fill(100);
     }
-    ellipse(posX, posY, diameter, diameter);
+
+    ellipse(pos.x, pos.y, diameter, diameter);
 
     if (initialized) {
       fill(200);
-      text(name, posX, posY);
+      text(name, pos.x, pos.y);
     }
+  }
+
+  //---------------------------
+  void repulse(PVector fromPoint) {
+    PVector diff = PVector.sub(pos, fromPoint);
+    if (diff.magSq() < repulsionRadius * repulsionRadius) {
+      float strength = 1-(diff.mag() / repulsionRadius);
+      diff.normalize();
+      diff.mult(strength * 2.0);
+      accel.add(diff);
+    }
+  }
+
+  //---------------------------
+  void addGravity() {
+    accel.y += 0.1;
+  }
+
+  //---------------------------
+  void attractToCenter() {
+    PVector center = new PVector(width/2, height/2);
+    PVector desired = PVector.sub(center, pos);
+    desired.normalize();
+    desired.mult(0.7);
+    accel.add(desired);
   }
 }
 

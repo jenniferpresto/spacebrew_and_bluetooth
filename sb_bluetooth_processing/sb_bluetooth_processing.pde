@@ -1,9 +1,3 @@
-//import ddf.minim.spi.*;
-//import ddf.minim.signals.*;
-//import ddf.minim.analysis.*;
-//import ddf.minim.ugens.*;
-//import ddf.minim.effects.*;
-
 // Spacebrew
 import spacebrew.*;
 String server = "sandbox.spacebrew.cc";
@@ -28,10 +22,6 @@ void setup() {
   size(600, 400);
   background(0);
   colorMode(HSB, 360, 100, 100);
-  
-  textAlign(CENTER);
-  century = loadFont("CenturyGothic-24.vlw");
-  textFont(century);
 
   // Spacebrew setup
   sb = new Spacebrew(this);
@@ -40,14 +30,6 @@ void setup() {
 
   sb.connect(server, name, description);
 
-  // Shield objects in Processing
-  for (int i = 0; i < 2; i++) {
-    shields[i] = new BLEShield();
-  }
-  // arbitrarily assign names of two shields
-  shields[0].name = "BLE_GUS";
-  shields[1].name = "BLE_JGP";
-
   // Audio setup
   minim = new Minim(this);
 
@@ -55,7 +37,22 @@ void setup() {
     xyloNotes[i] = minim.loadSample("xylo" + i + ".wav", 512);
     violinNotes[i] = minim.loadSample("violin" + i + ".wav", 512);
   }
- }
+
+
+  // Shield objects in Processing
+  for (int i = 0; i < 2; i++) {
+    shields[i] = new BLEShield();
+  }
+  // arbitrarily assign names of two shields
+  // (since we know in advance what they'll be)
+  shields[0].name = "BLE_GUS";
+  shields[1].name = "BLE_JGP";
+
+  // fonts
+  textAlign(CENTER);
+  century = loadFont("CenturyGothic-24.vlw");
+  textFont(century);
+}
 
 void draw() {
   background(0);
@@ -63,11 +60,19 @@ void draw() {
 
   for (int i = 0; i < 2; i++) {
     shields[i].update();
-    shields[i].playMusic(i);
+    shields[i].playMusic(i); // pass index number so know which tones to play
     shields[i].visualize();
   }
+
+  // make the two dots gently repel each other
+  shields[0].repulse(shields[1].pos);
+  shields[1].repulse(shields[0].pos);
 }
 
+// this function called when sketch receives a message from Spacebrew
+// we are sending two custom data types from the node application:
+// "button_info" and "rssi_info"
+// both types have an element called "deviceName," so we parse that first
 void onCustomMessage ( String name, String type, String value) {
   JSONObject receivedData = JSONObject.parse(value);
   String deviceName = receivedData.getString("deviceName");
@@ -96,10 +101,12 @@ void onCustomMessage ( String name, String type, String value) {
 
   // or check to see if receiving rssi info
   else if (type.equals ("rssi_info")) {
-//    println("rssiData: " + receivedData);
-      shields[index].avgRSSI = abs(float(receivedData.getString("rssiValue")));
+    //    println("rssiData: " + receivedData);
+    // Data arrives as a string within a JSON Object;
+    // convert it to a float. 
+    shields[index].avgRSSI = abs(float(receivedData.getString("rssiValue")));
   }
-  
+
   // update time stamp so we can make sure we're still getting data
   shields[index].timeLastCustomMessage = millis();
 }
@@ -107,13 +114,13 @@ void onCustomMessage ( String name, String type, String value) {
 // keypress is for debugging (and for just hearing nice sounds if you like)
 void keyPressed () {
   if (key == ' ') {
-    int ranNote = int(random(0, 24));
+    int ranNote = floor(random(0, 24.99));
     xyloNotes[ranNote].trigger();
     println("xylo: " + ranNote);
   }
 
   if (key == 'v') {
-    int ranNote = int(random(0, 24));
+    int ranNote = floor(random(0, 24.99));
     violinNotes[ranNote].trigger();
     println("violin: " + ranNote);
   }
