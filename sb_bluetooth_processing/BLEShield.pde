@@ -16,7 +16,7 @@ class BLEShield {
   // Constructor
   //---------------------------
   BLEShield() {
-    diameter = 50;
+    diameter = 100;
     float radius = diameter/2;
     repulsionRadius = radius * 1.5;
 
@@ -43,7 +43,7 @@ class BLEShield {
   //---------------------------
   void update() {
     // ease toward new diameter
-    float targetDiameter = map(avgRSSI, 65, 45, 40, 100);
+    float targetDiameter = map(avgRSSI, 65, 45, 200, 80);
     // clamp targetDiameter
     if (targetDiameter > 100) {
       targetDiameter = 100;
@@ -84,7 +84,7 @@ class BLEShield {
   //---------------------------
   void playMusic(int index) {
     if (initialized && buttonDown) {
-      // get the range for speed
+      // get speed of notes, based on RSSI
       float notesPerSecond = map(avgRSSI, 55, 45, 3, 10);
       // clamp the results
       if (notesPerSecond < 3) {
@@ -98,7 +98,7 @@ class BLEShield {
 
       // if it's time to play a new note
       if (millis() - timeLastNote > millisNextNote) {
-        // get range for pitch
+        // select anchor pitch based on RSSI
         float pitch = map(avgRSSI, 55, 45, 2, 22);
         // since accessing an array, must clamp pitch numbers
         if (pitch < 2) {
@@ -125,6 +125,10 @@ class BLEShield {
         // visual cue
         s = 100;
         b = 100;
+        
+        // propel the bubble up a little bit (and to the side)
+        accel.x += random(-1.0, 1.0);
+        accel.y -= 1.5;
       }
     }
   }

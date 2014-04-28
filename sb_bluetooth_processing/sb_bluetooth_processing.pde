@@ -19,7 +19,8 @@ PFont century;
 
 void setup() {
   // setting up the basics
-  size(600, 400);
+//  size(600, 400);
+  size(displayWidth, displayHeight);
   background(0);
   colorMode(HSB, 360, 100, 100);
 
