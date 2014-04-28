@@ -3,10 +3,14 @@ class BLEShield {
   float maxSpeed;
   String name;
   float avgRSSI;
+  float maxRSSI, minRSSI;
+
   boolean buttonDown;
   boolean initialized;
   float h, s, b;
   float diameter;
+  float maxDiameter, minDiameter;
+
 
   float timeLastNote;
   float timeLastCustomMessage;
@@ -16,7 +20,9 @@ class BLEShield {
   // Constructor
   //---------------------------
   BLEShield() {
-    diameter = 100;
+    maxDiameter = 400;
+    minDiameter = 180;
+    diameter = minDiameter;
     float radius = diameter/2;
     repulsionRadius = radius * 1.5;
 
@@ -26,13 +32,14 @@ class BLEShield {
     maxSpeed = 2.5;
 
     name = "";
-    avgRSSI = 100.0; // start big (which means small, since we take abs of rssi)
+    maxRSSI = 65;
+    minRSSI = 45;
+    avgRSSI = maxRSSI; // start big (which means small, since we take abs of rssi)
     buttonDown = false;
     initialized = false;
-    float h = random(300, 360);
-    float s = 50;
-    float b = 50;
-
+    h = random(215, 265);
+    s = 50;
+    b = 50;
 
     timeLastNote = 0;
     timeLastCustomMessage = millis();
@@ -43,16 +50,15 @@ class BLEShield {
   //---------------------------
   void update() {
     // ease toward new diameter
-    float targetDiameter = map(avgRSSI, 65, 45, 200, 80);
+    float targetDiameter = map(avgRSSI, maxRSSI, minRSSI, maxDiameter, minDiameter);
     // clamp targetDiameter
-    if (targetDiameter > 100) {
-      targetDiameter = 100;
+    if (targetDiameter > maxDiameter) {
+      targetDiameter = maxDiameter;
     } 
-    else if (targetDiameter < 40) {
-      targetDiameter = 40;
+    else if (targetDiameter < minDiameter) {
+      targetDiameter = minDiameter;
     }
     diameter = (0.9 * diameter) + (0.1 * targetDiameter);
-
     // generally easing toward more neutral colors (will change when sounds are played
     s = (s * 0.9) + (50 * 0.1);
     b = (b * 0.9) + (50 * 0.1);
@@ -66,7 +72,8 @@ class BLEShield {
 
     if (pos.y < height - radius) {
       addGravity();
-    } else {
+    } 
+    else {
       accel.y -= 0.2;
     }
 
@@ -74,7 +81,7 @@ class BLEShield {
     if (pos.x < repulsionRadius || pos.x > width - repulsionRadius ||  pos.y < repulsionRadius) {
       attractToCenter();
     }
-    
+
     vel.add(accel);
     vel.limit(maxSpeed);
     pos.add(vel);
@@ -99,7 +106,7 @@ class BLEShield {
       // if it's time to play a new note
       if (millis() - timeLastNote > millisNextNote) {
         // select anchor pitch based on RSSI
-        float pitch = map(avgRSSI, 55, 45, 2, 22);
+        float pitch = map(avgRSSI, maxRSSI, minRSSI, 2, 22);
         // since accessing an array, must clamp pitch numbers
         if (pitch < 2) {
           pitch = 2;
@@ -125,26 +132,34 @@ class BLEShield {
         // visual cue
         s = 100;
         b = 100;
-        
+
+        diameter *= 1.1;
+
+        float revNormalizedPitch = map(pitch, 2, 22, 2.5, 1.5);
         // propel the bubble up a little bit (and to the side)
-        accel.x += random(-1.0, 1.0);
-        accel.y -= 1.5;
+        accel.x += random(-2.0, 2.0);
+        accel.y -= 4.5 * revNormalizedPitch; // propel upwards more on lower notes (since fewer)
       }
     }
   }
 
   //---------------------------
   void visualize() {
-    if (initialized) {
-      fill(h, s, b);
-    } 
-    else {
+    if (!initialized) {
       fill(100);
-    }
-
-    ellipse(pos.x, pos.y, diameter, diameter);
-
-    if (initialized) {
+      ellipse(pos.x, pos.y, diameter, diameter);
+    }     
+    else {
+      // make a gradient based on existing saturation, brightness, and diameter
+      int numCircles = 30;
+      println("saturation is : " + s);
+      for (int i = 0; i < numCircles; i++) {
+        float tempCol;
+        tempCol = map(i, 0, numCircles, 0, s);
+        fill(h, tempCol, b);
+        float tempDiameter = diameter - ((i*diameter)/numCircles);
+        ellipse(pos.x, pos.y, tempDiameter, tempDiameter);
+      }
       fill(200);
       text(name, pos.x, pos.y);
     }

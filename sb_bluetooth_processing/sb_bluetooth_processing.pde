@@ -19,10 +19,11 @@ PFont century;
 
 void setup() {
   // setting up the basics
-//  size(600, 400);
-  size(displayWidth, displayHeight);
+  size(600, 400);
+//  size(displayWidth, displayHeight);
   background(0);
   colorMode(HSB, 360, 100, 100);
+  noStroke();
 
   // Spacebrew setup
   sb = new Spacebrew(this);
@@ -56,6 +57,7 @@ void setup() {
 }
 
 void draw() {
+  println("frameRate: " + frameRate);
   background(0);
   fill(255, 100, 100);
 
@@ -91,7 +93,7 @@ void onCustomMessage ( String name, String type, String value) {
 
   // check to see if button is down or up
   if (type.equals("button_info")) {
-    println("buttonData: " + receivedData);
+//    println("buttonData: " + receivedData);
     if (receivedData.getInt("buttonValue") == 0) {
       shields[index].buttonDown = true;
     } 
