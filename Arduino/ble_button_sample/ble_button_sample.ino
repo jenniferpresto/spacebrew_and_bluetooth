@@ -12,7 +12,7 @@ the shield via BLE signal.
 #define DIGITAL_IN_PIN     5
 
 //To write -> ble_write(HEXAGON)
-//To read -> ble_read()
+//To read -> ble_read(HEXAGON)
 // Read analog input and send out -> uint16_t value = analogRead(ANALOG_IN_PIN); 
 
 void setup()
@@ -36,12 +36,6 @@ void loop()
 {
   static boolean analog_enabled = false;
   static byte old_state = LOW;
-  
-  //  if (analog_enabled)  // if analog reading enabled
-//  {
-//    // Read and send out
-//    uint16_t value = analogRead(ANALOG_IN_PIN); 
-//  }
   
   // If digital in changes, report the state
   if (digitalRead(DIGITAL_IN_PIN) != old_state)
