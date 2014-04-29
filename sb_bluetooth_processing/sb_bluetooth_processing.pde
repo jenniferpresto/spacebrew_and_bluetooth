@@ -57,6 +57,7 @@ void setup() {
 }
 
 void draw() {
+<<<<<<< HEAD
   
   println("frameRate: " + frameRate);
 //  background(0);
@@ -65,6 +66,11 @@ void draw() {
   fill(206, 85, 73, 20);
   rect(0, 0, width, height);
 
+=======
+//  println("frameRate: " + frameRate);
+  background(0);
+  fill(255, 100, 100);
+>>>>>>> bbf884724b7ee68bb8d6debc24f7423545ac62b9
 
   for (int i = 0; i < 2; i++) {
     shields[i].update();
