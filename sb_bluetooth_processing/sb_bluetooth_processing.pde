@@ -19,8 +19,8 @@ PFont century;
 
 void setup() {
   // setting up the basics
-  size(600, 400);
-//  size(displayWidth, displayHeight);
+//  size(600, 400);
+  size(displayWidth, displayHeight);
   background(0);
   colorMode(HSB, 360, 100, 100);
   noStroke();
@@ -57,9 +57,14 @@ void setup() {
 }
 
 void draw() {
+  
   println("frameRate: " + frameRate);
-  background(0);
-  fill(255, 100, 100);
+//  background(0);
+//  fill(255, 100, 100);
+  
+  fill(206, 85, 73, 20);
+  rect(0, 0, width, height);
+
 
   for (int i = 0; i < 2; i++) {
     shields[i].update();
@@ -128,4 +133,3 @@ void keyPressed () {
     println("violin: " + ranNote);
   }
 }
-
