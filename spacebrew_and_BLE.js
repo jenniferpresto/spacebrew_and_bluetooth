@@ -37,13 +37,9 @@ function ConnectSpacebrew() {
       // setup spacebrew
       sb.name("BLUETOOTH");
       sb.description("This app routes information from two arduino BLE Shields."); // set the app description
+      sb.server = "localhost";
 
-      // create the spacebrew subscription channels
-      // sb.addPublish("text", "string", "");  // create the publication feed
-      // // sb.addSubscribe("text", "string");    // create the subscription feed
-      // sb.addPublish("button", "boolean", false); // create boolean for button press
-
-      // add custom data type for rssi and for button
+      // add custom data types for rssi and for button
       sb.addPublish("rssi", "rssi_info", {deviceName:"", rssiValue:""} );
       sb.addPublish("button", "button_info", {deviceName: "", buttonValue:""} );
 
@@ -52,7 +48,6 @@ function ConnectSpacebrew() {
       sb.onOpen = function (){
         console.log("Spacebrew is open");
         // initialize Bluetooth connection only after Spacebrew is open 
-        // callback(InitializeBluetooth);
         InitializeBluetooth();
       };
 

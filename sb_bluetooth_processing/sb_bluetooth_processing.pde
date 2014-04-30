@@ -1,6 +1,9 @@
 // Spacebrew
 import spacebrew.*;
-String server = "sandbox.spacebrew.cc";
+
+// connect either to public spacebrew sandbox or local server
+//String server = "sandbox.spacebrew.cc";
+String server = "localhost";
 String name="Processing subscribe-side app";
 String description = "Subscribe-side app that visualizes and audio-izes info from Bluetooth";
 Spacebrew sb;
@@ -57,20 +60,20 @@ void setup() {
 }
 
 void draw() {
-<<<<<<< HEAD
+
   
-  println("frameRate: " + frameRate);
+//  println("frameRate: " + frameRate);
 //  background(0);
 //  fill(255, 100, 100);
   
-  fill(206, 85, 73, 20);
-  rect(0, 0, width, height);
-
-=======
+//  fill(206, 85, 73, 20);
+//  rect(0, 0, width, height);
+//
+//=======
 //  println("frameRate: " + frameRate);
   background(0);
-  fill(255, 100, 100);
->>>>>>> bbf884724b7ee68bb8d6debc24f7423545ac62b9
+//  fill(255, 100, 100);
+//>>>>>>> bbf884724b7ee68bb8d6debc24f7423545ac62b9
 
   for (int i = 0; i < 2; i++) {
     shields[i].update();
