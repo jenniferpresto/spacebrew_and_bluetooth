@@ -22,7 +22,7 @@ PFont century;
 
 void setup() {
   // setting up the basics
-//  size(600, 400);
+//  size(600, 400); // use smaller size for debugging
   size(displayWidth, displayHeight);
   background(0);
   colorMode(HSB, 360, 100, 100);
@@ -61,19 +61,7 @@ void setup() {
 
 void draw() {
 
-  
-//  println("frameRate: " + frameRate);
-//  background(0);
-//  fill(255, 100, 100);
-  
-//  fill(206, 85, 73, 20);
-//  rect(0, 0, width, height);
-//
-//=======
-//  println("frameRate: " + frameRate);
-  background(0);
-//  fill(255, 100, 100);
-//>>>>>>> bbf884724b7ee68bb8d6debc24f7423545ac62b9
+   background(0);
 
   for (int i = 0; i < 2; i++) {
     shields[i].update();
@@ -95,7 +83,7 @@ void onCustomMessage ( String name, String type, String value) {
   String deviceName = receivedData.getString("deviceName");
   int index = 0;
 
-  // first, trip a flag if the device has been discovered at all
+  // first, trip a flag, "initialized," if the device has been discovered at all
   if (deviceName.equals("BLE_GUS")) {
     shields[0].initialized = true;
     index = 0;
@@ -107,7 +95,6 @@ void onCustomMessage ( String name, String type, String value) {
 
   // check to see if button is down or up
   if (type.equals("button_info")) {
-//    println("buttonData: " + receivedData);
     if (receivedData.getInt("buttonValue") == 0) {
       shields[index].buttonDown = true;
     } 
@@ -118,7 +105,7 @@ void onCustomMessage ( String name, String type, String value) {
 
   // or check to see if receiving rssi info
   else if (type.equals ("rssi_info")) {
-    //    println("rssiData: " + receivedData);
+
     // Data arrives as a string within a JSON Object;
     // convert it to a float. 
     shields[index].avgRSSI = abs(float(receivedData.getString("rssiValue")));
